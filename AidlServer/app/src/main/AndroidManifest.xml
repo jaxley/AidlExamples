@@ -21,6 +21,9 @@
             android:name=".GreetingService"
             android:enabled="true"
             android:exported="true" >
+            <intent-filter>
+                <action android:name="net.axley.aidlserver.IGreetingService" />
+            </intent-filter>
         </service>
     </application>
 

@@ -2,6 +2,8 @@ package net.axley.aidlclient;
 
 import android.app.Activity;
 import android.content.ComponentName;
+import android.content.Context;
+import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -16,6 +18,7 @@ import net.axley.aidlserver.IGreetingService;
 public class ClientHomeActivity extends Activity {
 
     private IGreetingService greetingService;
+    TextView greetingText;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -23,13 +26,10 @@ public class ClientHomeActivity extends Activity {
         setContentView(R.layout.activity_client_home);
 
         // change the text to that returned by the service
-        TextView greetingText = (TextView)findViewById(R.id.greetingText);
+        greetingText = (TextView)findViewById(R.id.greetingText);
 
-        try {
-            greetingText.setText(greetingService.greet("Jim Bob"));
-        } catch (RemoteException e) {
-            greetingText.setText(e.getStackTrace().toString());
-        }
+        bindService(new Intent("net.axley.aidlserver.IGreetingService"),
+                greetingServiceConnection, Context.BIND_AUTO_CREATE);
     }
 
 
@@ -52,16 +52,22 @@ public class ClientHomeActivity extends Activity {
         return super.onOptionsItemSelected(item);
     }
 
-    private class GreetingServiceConnection implements ServiceConnection {
+    private ServiceConnection greetingServiceConnection = new ServiceConnection() {
 
         @Override
         public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
            greetingService = IGreetingService.Stub.asInterface(iBinder);
+
+            try {
+                greetingText.setText(greetingService.greet("Jim Bob"));
+            } catch (RemoteException e) {
+                greetingText.setText(e.getStackTrace().toString());
+            }
         }
 
         @Override
         public void onServiceDisconnected(ComponentName componentName) {
             // don't care
         }
-    }
+    };
 }
